@@ -157,20 +157,31 @@ namespace HGF
         /// </summary>
         /// <param name="ImageGameObject">Image的RectTransform</param>
         /// <param name="Position">位置类型：-1：左侧 0：中间 1：右侧</param>
-        private void PositionImageOutside (RectTransform ImageGameObject, int Position)
+        private void PositionImageOutside(RectTransform ImageGameObject, int Position)
         {
+            // 取得角色 Image 組件
+            Image imgComponent = ImageGameObject.gameObject.GetComponent<Image>();
+            // 安全取得 sprite 寬度，若 sprite 為 null，則寬度為 0
+            float spriteWidth = GetSpriteWidth(imgComponent);
+            RectTransform canvasRect = MainCanvas.GetComponent<RectTransform>();
+            float canvasHalfWidth = canvasRect.sizeDelta.x / 2;
+
             switch (Position)
             {
                 case -1:
-                    gameObject.GetComponent<RectTransform>().anchoredPosition = new Vector2((-MainCanvas.GetComponent<RectTransform>().sizeDelta.x / 2) - (ImageGameObject.gameObject.GetComponent<Image>().sprite.texture.width / 2), ImageGameObject.anchoredPosition.y);
+                    // 从左侧外部设置位置
+                    ImageGameObject.anchoredPosition = new Vector2(-canvasHalfWidth - (spriteWidth / 2), ImageGameObject.anchoredPosition.y);
                     break;
                 case 1:
-                    gameObject.GetComponent<RectTransform>().anchoredPosition = new Vector2((MainCanvas.GetComponent<RectTransform>().sizeDelta.x / 2) + (ImageGameObject.gameObject.GetComponent<Image>().sprite.texture.width / 2), ImageGameObject.anchoredPosition.y);
+                    // 从右侧外部设置位置
+                    ImageGameObject.anchoredPosition = new Vector2(canvasHalfWidth + (spriteWidth / 2), ImageGameObject.anchoredPosition.y);
                     break;
                 case 0:
-                    gameObject.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, ImageGameObject.anchoredPosition.y);
+                    // 居中设置
+                    ImageGameObject.anchoredPosition = new Vector2(0, ImageGameObject.anchoredPosition.y);
                     break;
-                default: break;
+                default:
+                    break;
             }
         }
 
@@ -180,22 +191,39 @@ namespace HGF
         /// <param name="ImageGameObject">Image的RectTransform</param>
         /// <param name="Position">位置类型：-1：左侧 0：中间 1：右侧</param>
         /// <returns>目标位置</returns>
-        private Vector2 PositionImageInside (RectTransform ImageGameObject, int Position)
+        private Vector2 PositionImageInside(RectTransform ImageGameObject, int Position)
         {
+            // 取得角色 Image 組件
+            Image imgComponent = ImageGameObject.gameObject.GetComponent<Image>();
+            // 安全取得 sprite 寬度
+            float spriteWidth = GetSpriteWidth(imgComponent);
+            RectTransform canvasRect = MainCanvas.GetComponent<RectTransform>();
+            float canvasHalfWidth = canvasRect.sizeDelta.x / 2;
+            float yPos = ImageGameObject.anchoredPosition.y;
+
             switch (Position)
             {
                 case -1:
-                    return new Vector2((-MainCanvas.GetComponent<RectTransform>().sizeDelta.x / 2) + (ImageGameObject.gameObject.GetComponent<Image>().sprite.texture.width / 2), ImageGameObject.anchoredPosition.y);
+                    // 左侧内部位置
+                    return new Vector2(-canvasHalfWidth + (spriteWidth / 2), yPos);
                 case 1:
-                    return new Vector2((MainCanvas.GetComponent<RectTransform>().sizeDelta.x / 2) - (ImageGameObject.gameObject.GetComponent<Image>().sprite.texture.width / 2), ImageGameObject.anchoredPosition.y);
+                    // 右侧内部位置
+                    return new Vector2(canvasHalfWidth - (spriteWidth / 2), yPos);
                 case 0:
-                    return new Vector2(0, ImageGameObject.anchoredPosition.y);
+                    // 居中位置
+                    return new Vector2(0, yPos);
                 default:
-                {
                     GameAPI.Print("当前剧情文本受损，请重新安装游戏尝试", "error");
                     return new Vector2(0, 0);
-                }
             }
+        }
+
+        /// <summary>
+        /// 安全取得 Image 上的 sprite 寬度，若沒有 sprite 則返回 0
+        /// </summary>
+        private float GetSpriteWidth(Image img)
+        {
+            return img != null && img.sprite != null ? img.sprite.texture.width : 0f;
         }
     }
 }
